@@ -1,0 +1,48 @@
+
+
+docker run --rm -p 8080:8080 jxlwqq/http-echo --text="hello"
+
+1. docker run --platform linux/x86_64 -p 3306:3306 --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=true -d mysql:5.7 
+
+2.docker exec -it mysql mysql
+create database wp CHARACTER SET utf8;
+grant all privileges on wp.* to wp@'%' identified by 'wp';
+flush privileges;
+quit
+
+3.docker run -d -p 8080:80 -e WORDPRESS_DB_HOST=host.docker.internal -e WORDPRESS_DB_NAME=wp -e WORDPRESS_DB_USER=wp -e WORDPRESS_DB_PASSWORD=wp wordpress
+
+4.docker network create app-network
+
+5.docker network create app-network
+
+6.docker network connect app-network mysql
+
+7.docker run -d -p 8080:80 --network=app-network -e WORDPRESS_DB_HOST=mysql -e WORDPRESS_DB_NAME=wp -e WORDPRESS_DB_USER=wp -e WORDPRESS_DB_PASSWORD=wp wordpress
+
+8.docker run --platform linux/x86_64 -p 3306:3306 --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=true --network=app-network -v /Users/cuteda91/mysql:/var/lib/mysql -d mysql:5.7
+
+https://velog.io/@max9106/Docker-M1-Mac%EC%97%90%EC%84%9C-docker-mysql-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0
+
+안녕하세요, 도커 기본 명령어(run) 강의에서의
+에러 해결경험 공유합니다. 사용 환경은 m1 맥 입니다.
+1.hashicorp 설치 에러
+에러내용 -> WARNING: The requested images platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+해결방법 -> hashicorp 는 아직 m1맥 미지원이므로 hashicorp/http-echo 대신 jxlwqq/http-echo 입력합니다.
+
+2. telnet 명령어 에러
+에러내용 -> zsh: command not found: telnet
+해결방법 -> 맥OS에서는 하이시에라 버전 이후 기본적으로 터미널에서 telnet 명령를 제공하지 않게 되었습니다. hombrew 설치 후 telnet 설치(brew install telnet)하여 사용합니다.
+
+3. mysql 설치 에러
+에러내용 -> docker: no matching manifest for linux/arm64/v8 in the manifest list entries.
+해결방법 -> mysql 실행하는 docker run 명령어의 옵션으로 --platform linux/x86_64 를 추가해줍니다.
+
+4. mysql grant 에러
+에러내용 -> ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'identified by 'wp'' at line 1
+해결방법 -> mysql 최신버전은 관련 명령어 스타일이 약간 다르므로 mysql 설치할 때 5.7 버전을 뒤에 명시하여(mysql:5.7) 다시 설치해줍니다.
+참고로 현재 실행중인 컨테이너는 docker ps 로 확인할 수 있으며, docker -rm -f [해당하는 CONTAINER ID 혹은 NAMES] 로 컨테이너를 지우고 다시 설치하면 됩니다.
+
+5. 워드프레스 실행시 database 미연결 에러
+에러내용 -> 브라우저 접속시 Error establishing a database connection
+해결방법 -> 4번 에러를 해결했다면 잘 연결될겁니다. 혹시 mysql의 포트를 다르게 바꿨다면 워드프레스 실행 명령어 중간에 host.docker.internal:바꾼포트 로 바꾸면 됩니다
