@@ -15,7 +15,7 @@
         실험내용 원격 추가
        갈비1
 
-        
+       docker run -d -v jenkins_h ome:/var/jenkins_home -p 8080:8080 -p 50000:50000 --restart=on-failure --name jenkins-server jenkins/jenkins:lts-jdk11
 
     </body>
 </html>
